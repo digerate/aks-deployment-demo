@@ -18,14 +18,11 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Build Docker image
+    - name: Build and Push Docker image
       run: |
-        docker build -t digerate/my-node-app:${{ github.sha }} ./my-node-app
-        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-        docker push digerate/my-node-app:${{ github.sha }}
-        env:
-            DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-            DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}  
+          docker build -t ***my-node-app:${{ github.sha }} ./my-node-app
+          echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker push ***my-node-app:${{ github.sha }} 
 
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
