@@ -20,9 +20,9 @@ jobs:
 
     - name: Build and Push Docker image
       run: |
-          docker build -t ***my-node-app:${{ github.sha }} ./my-node-app
+          docker build -t digerate/my-node-app:${{ github.sha }} ./my-node-app
           echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker push ***my-node-app:${{ github.sha }} 
+          docker push digerate/my-node-app:${{ github.sha }} 
 
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
