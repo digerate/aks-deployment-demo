@@ -1,3 +1,7 @@
+# node_modules
+/node_modules
+/enhanced-node-app/node_modules
+
 # Logs
 logs
 *.log
