@@ -31,4 +31,10 @@ jobs:
       run: |
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
         export KUBECONFIG=./kubeconfig
+        kubectl create secret generic cosmosdb-secret \
+            --from-literal=COSMOS_DB_URI='${{ secrets.COSMOS_DB_URI }}' \
+            --from-literal=COSMOS_DB_PRIMARY_KEY='${{ secrets.COSMOS_DB_PRIMARY_KEY }}' \
+            --from-literal=COSMOS_DB_DATABASE_ID='${{ secrets.COSMOS_DB_DATABASE_ID }}' \
+            --from-literal=COSMOS_DB_CONTAINER_ID='${{ secrets.COSMOS_DB_CONTAINER_ID }}' \
+            -n default --dry-run=client -o yaml | kubectl apply -f -
         kubectl set image deployment/enhanced-node-app-deployment enhanced-node-app=digerate/enhanced-node-app:${{ github.sha }} -n default

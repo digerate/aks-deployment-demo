@@ -17,6 +17,17 @@ spec:
       - name: enhanced-node-app  # 
         image: digerate/enhanced-node-app:latest  
         ports:
-        - containerPort: 3000  
+        - containerPort: 3000
+        env:
+          - name: COSMOS_DB_URI
+            valueFrom:
+              secretKeyRef:
+                name: cosmosdb-secret
+                key: COSMOS_DB_URI
+          - name: COSMOS_DB_PRIMARY_KEY
+            valueFrom:
+              secretKeyRef:
+                name: cosmosdb-secret
+                key: COSMOS_DB_PRIMARY_KEY  
 
 
