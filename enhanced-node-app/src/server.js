@@ -7,10 +7,24 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/myDatabase', { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB...'))
-  .catch(err => console.error('Could not connect to MongoDB...', err));
+// Conditional database setup
+if (process.env.USE_COSMOS_DB === 'true') {
+  // Cosmos DB setup
+  const { CosmosClient } = require("@azure/cosmos");
+  const client = new CosmosClient({
+    endpoint: process.env.COSMOS_DB_URI,
+    key: process.env.COSMOS_DB_PRIMARY_KEY,
+  });
+  const database = client.database(process.env.COSMOS_DB_DATABASE_ID);
+  const container = database.container(process.env.COSMOS_DB_CONTAINER_ID);
+  // Additional Cosmos DB setup or logic here
+  console.log('Connected to Azure Cosmos DB...');
+} else {
+  // MongoDB setup
+  mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB...'))
+    .catch(err => console.error('Could not connect to MongoDB...', err));
+}
 
 // Serve Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

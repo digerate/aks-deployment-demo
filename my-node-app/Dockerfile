@@ -1,4 +1,4 @@
-# Use an official Node runtime as a parent image
+# Use the official Node.js base image
 FROM node:21-slim
 
 # Set the working directory in the container
@@ -7,14 +7,17 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install any dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
-COPY src/ ./src/
+# Install bcrypt
+RUN npm rebuild bcrypt --build-from-source
 
-# Make port 3000 available to the world outside this container
+# Copy the rest of the application code
+COPY . .
+
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Define the command to run the app
-CMD [ "node", "src/app.js" ]
+# Start the application
+CMD ["node", "src/server.js"]
