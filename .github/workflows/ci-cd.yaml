@@ -31,4 +31,4 @@ jobs:
       run: |
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
         export KUBECONFIG=./kubeconfig
-        kubectl set image deployment/my-node-app-deployment my-node-app=digerate/enhanced-node-app:${{ github.sha }}
+        kubectl set image deployment/enhanced-node-app-deployment enhanced-node-app=digerate/enhanced-node-app:${{ github.sha }} -n default
