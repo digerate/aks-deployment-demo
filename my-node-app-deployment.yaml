@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-node-app-deployment
-  namespace: default # or your preferred namespace
+  name: enhanced-node-app-deployment  
+  namespace: default
 spec:
-  replicas: 2 # Number of pods to run
+  replicas: 2 
   selector:
     matchLabels:
-      app: my-node-app
+      app: enhanced-node-app  # Update the label to match the new app name
   template:
     metadata:
       labels:
-        app: my-node-app
+        app: enhanced-node-app  # Update the label to match the new app name
     spec:
       containers:
-      - name: my-node-app
-        image: digerate/my-node-app:latest # Use your actual image
+      - name: enhanced-node-app  # 
+        image: digerate/enhanced-node-app:latest  # Update the image to point to the new Docker image
         ports:
-        - containerPort: 80
+        - containerPort: 80  # Make sure this port matches the port your app is configured to listen on
