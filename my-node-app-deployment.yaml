@@ -19,15 +19,28 @@ spec:
         ports:
         - containerPort: 3000
         env:
-          - name: COSMOS_DB_URI
-            valueFrom:
-              secretKeyRef:
-                name: cosmosdb-secret
-                key: COSMOS_DB_URI
-          - name: COSMOS_DB_PRIMARY_KEY
-            valueFrom:
-              secretKeyRef:
-                name: cosmosdb-secret
-                key: COSMOS_DB_PRIMARY_KEY  
+        - name: COSMOS_DB_URI
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: COSMOS_DB_URI
+        - name: COSMOS_DB_PRIMARY_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: COSMOS_DB_PRIMARY_KEY
+        - name: COSMOS_DB_DATABASE_ID
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: COSMOS_DB_DATABASE_ID
+        - name: COSMOS_DB_CONTAINER_ID
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: COSMOS_DB_CONTAINER_ID
+        - name: USE_COSMOS_DB
+          value: "true"
+ 
 
 

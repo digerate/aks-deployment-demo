@@ -7,9 +7,15 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
+console.log("USE_COSMOS_DB:", process.env.USE_COSMOS_DB);
+console.log("COSMOS_DB_URI:", process.env.COSMOS_DB_URI);
+console.log("COSMOS_DB_PRIMARY_KEY:", process.env.COSMOS_DB_PRIMARY_KEY);
+console.log("COSMOS_DB_DATABASE_ID:", process.env.COSMOS_DB_DATABASE_ID);
+console.log("COSMOS_DB_CONTAINER_ID:", process.env.COSMOS_DB_CONTAINER_ID);
+
 // Conditional database setup
 if (process.env.USE_COSMOS_DB === 'true') {
-  // Cosmos DB setup
+  console.log('Connecting to Azure Cosmos DB...');
   const { CosmosClient } = require("@azure/cosmos");
   const client = new CosmosClient({
     endpoint: process.env.COSMOS_DB_URI,
@@ -20,7 +26,7 @@ if (process.env.USE_COSMOS_DB === 'true') {
   // Additional Cosmos DB setup or logic here
   console.log('Connected to Azure Cosmos DB...');
 } else {
-  // MongoDB setup
+  console.log('Connecting to MongoDB...');
   mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connected to MongoDB...'))
     .catch(err => console.error('Could not connect to MongoDB...', err));
