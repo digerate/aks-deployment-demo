@@ -20,9 +20,9 @@ jobs:
 
     - name: Build and Push Docker image
       run: |
-          docker build -t digerate/my-node-app:${{ github.sha }} ./my-node-app
+          docker build -t digerate/enhanced-node-app:${{ github.sha }} ./enhanced-node-app
           echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker push digerate/my-node-app:${{ github.sha }} 
+          docker push digerate/enhanced-node-app:${{ github.sha }} 
 
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
@@ -31,4 +31,4 @@ jobs:
       run: |
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
         export KUBECONFIG=./kubeconfig
-        kubectl set image deployment/my-node-app-deployment my-node-app=yourdockerhubusername/my-node-app:${{ github.sha }}
+        kubectl set image deployment/my-node-app-deployment my-node-app=digerate/enhanced-node-app:${{ github.sha }}
