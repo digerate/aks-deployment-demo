@@ -31,7 +31,6 @@ if (process.env.USE_COSMOS_DB === 'true') {
     .then(() => console.log('Connected to MongoDB...'))
     .catch(err => console.error('Could not connect to MongoDB...', err));
 }
-
 // Serve Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -59,6 +58,12 @@ app.use((err, req, res, next) => {
   // For other types of errors, you might not want to leak details
   res.status(500).send('An unexpected error occurred. Please try again later.');
 });
+app.post('/api/users/register', (req, res) => {
+  // Assuming validation logic here
+  const errors = validateUser(req.body);
+  if (errors) {
+    return res.status(400).json({ success: false, errors });
+  }
 
 // Start the server
 app.listen(port, () => {
