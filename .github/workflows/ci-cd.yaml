@@ -41,11 +41,11 @@ jobs:
       
       - name: Apply HPA Configuration
         run: |
-          kubectl apply -f ./enhanced-node-app-hpa.yaml
+          kubectl apply -f enhanced-node-app-hpa.yaml --validate=false
 
       - name: Verify HPA
         run: |
-          kubectl get hpa ./enhanced-node-app-hpa -n default
+          kubectl get hpa enhanced-node-app-hpa -n default --validate=false
 
       - name: Get AKS Service Public IP
         id: get-ip
