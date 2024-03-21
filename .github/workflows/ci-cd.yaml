@@ -33,13 +33,6 @@ jobs:
           kubectl apply --dry-run=client -f my-node-app-deployment.yaml
           kubectl apply --dry-run=client -f enhanced-node-app-hpa.yaml
 
-      # Optional: Run Integration Tests against a Staging Environment
-    - name: Run Integration Tests
-      run: |
-          # Replace with the command to run your tests
-          # Example: ./run-integration-tests.sh
-          echo "Integration tests placeholder"
-
     - name: Create CosmosDB Secret
       run: |
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
@@ -60,7 +53,7 @@ jobs:
           kubectl rollout undo deployment/enhanced-node-app-deployment
           exit 1
         fi
-        
+
     - name: Apply HPA Configuration
       run: |
         kubectl apply -f enhanced-node-app-hpa.yaml    
