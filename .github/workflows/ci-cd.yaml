@@ -10,46 +10,51 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
       
-    - name: Set up Azure CLI
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Set up Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Build and Push Docker image
-      run: |
-          docker build -t digerate/enhanced-node-app:${{ github.sha }} ./enhanced-node-app
-          echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker push digerate/enhanced-node-app:${{ github.sha }} 
+      - name: Build and Push Docker image
+        run: |
+            docker build -t digerate/enhanced-node-app:${{ github.sha }} ./enhanced-node-app
+            echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker push digerate/enhanced-node-app:${{ github.sha }}
 
-    - name: Set up Kubectl
-      uses: azure/setup-kubectl@v1
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v1
 
-    - name: Create CosmosDB Secret
-      run: |
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
-        export KUBECONFIG=./kubeconfig
-        kubectl create secret generic cosmosdb-secret \
+      - name: Deploy to AKS
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
+          export KUBECONFIG=./kubeconfig
+          kubectl create secret generic cosmosdb-secret \
               --from-literal=COSMOS_DB_URI='${{ secrets.COSMOS_DB_URI }}' \
               --from-literal=COSMOS_DB_PRIMARY_KEY='${{ secrets.COSMOS_DB_PRIMARY_KEY }}' \
               --from-literal=COSMOS_DB_DATABASE_ID='${{ secrets.COSMOS_DB_DATABASE_ID }}' \
               --from-literal=COSMOS_DB_CONTAINER_ID='${{ secrets.COSMOS_DB_CONTAINER_ID }}' \
-              -n default --dry-run=client -o yaml | kubectl apply -f - 
+              -n default --dry-run=client -o yaml | kubectl apply -f -
+                kubectl set image deployment/enhanced-node-app-deployment enhanced-node-app=digerate/enhanced-node-app:${{ github.sha }} -n default      
+      
+      - name: Apply HPA Configuration
+        run: |
+          kubectl apply -f ./enhanced-node-app-hpa.yaml
 
-    - name: Apply HPA Configuration
-      run: |
-        kubectl apply -f enhanced-node-app-hpa.yaml    
+      - name: Verify HPA
+        run: |
+          kubectl get hpa ./enhanced-node-app-hpa -n default
 
-    - name: Get AKS Service Public IP
-      id: get-ip
-      run: |
-        IP=$(kubectl get svc myAKSCluster -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo "::set-output name=ip::$IP"
+      - name: Get AKS Service Public IP
+        id: get-ip
+        run: |
+          IP=$(kubectl get svc myAKSCluster -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "::set-output name=ip::$IP"
 
-    - name: Update function app with public IP
-      run: |
-        FUNCTION_APP_NAME=fronyendUI
-        RESOURCE_GROUP=ststicweb
-        az functionapp config appsettings set --name $FUNCTION_APP_NAME --resource-group $RESOURCE_GROUP --settings PUBLIC_IP=${{ steps.get-ip.outputs.ip }}
+      - name: Update function app with public IP
+        run: |
+          FUNCTION_APP_NAME=fronyendUI
+          RESOURCE_GROUP=ststicweb
+          az functionapp config appsettings set --name $FUNCTION_APP_NAME --resource-group $RESOURCE_GROUP --settings PUBLIC_IP=${{ steps.get-ip.outputs.ip }}
