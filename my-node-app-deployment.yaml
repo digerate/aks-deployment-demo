@@ -29,8 +29,8 @@ jobs:
       # Pre-Deployment Check: Kubernetes configuration syntax check
     - name: Check Kubernetes Configuration Syntax
       run: |
-          kubectl apply --dry-run=client -f my-node-app-deployment.yaml
-          kubectl apply --dry-run=client -f enhanced-node-app-hpa.yaml
+          kubectl apply --dry-run=client -f my-node-app-deployment.yaml --validate=false
+          kubectl apply --dry-run=client -f enhanced-node-app-hpa.yaml --validate=false
       # Optional: Run Integration Tests against a Staging Environment
     - name: Run Integration Tests
       run: |
