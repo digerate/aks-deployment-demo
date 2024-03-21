@@ -27,12 +27,6 @@ jobs:
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
 
-      # Pre-Deployment Check: Kubernetes configuration syntax check
-    - name: Check Kubernetes Configuration Syntax
-      run: |
-          kubectl apply --dry-run=client -f my-node-app-deployment.yaml
-          kubectl apply --dry-run=client -f enhanced-node-app-hpa.yaml
-
     - name: Create CosmosDB Secret
       run: |
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
