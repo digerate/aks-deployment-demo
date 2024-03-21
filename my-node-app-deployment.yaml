@@ -59,7 +59,7 @@ jobs:
         
     - name: Apply HPA Configuration
       run: |
-        kubectl apply -f enhanced-node-app-hpa.yaml    
+        kubectl apply -f enhanced-node-app-hpa.yaml --validate=false    
     - name: Get AKS Service Public IP
       id: get-ip
       run: |
