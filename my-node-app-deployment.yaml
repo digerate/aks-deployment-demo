@@ -1,45 +1,72 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: enhanced-node-app-deployment  
-  namespace: default
-spec:
-  replicas: 2 
-  selector:
-    matchLabels:
-      app: enhanced-node-app  
-  template:
-    metadata:
-      labels:
-        app: enhanced-node-app  
-    spec:
-      containers:
-      - name: enhanced-node-app  # 
-        image: digerate/enhanced-node-app:latest  
-        ports:
-        - containerPort: 3000
-        env:
-        - name: COSMOS_DB_URI
-          valueFrom:
-            secretKeyRef:
-              name: cosmosdb-secret
-              key: COSMOS_DB_URI
-        - name: COSMOS_DB_PRIMARY_KEY
-          valueFrom:
-            secretKeyRef:
-              name: cosmosdb-secret
-              key: COSMOS_DB_PRIMARY_KEY
-        - name: COSMOS_DB_DATABASE_ID
-          valueFrom:
-            secretKeyRef:
-              name: cosmosdb-secret
-              key: COSMOS_DB_DATABASE_ID
-        - name: COSMOS_DB_CONTAINER_ID
-          valueFrom:
-            secretKeyRef:
-              name: cosmosdb-secret
-              key: COSMOS_DB_CONTAINER_ID
-        - name: USE_COSMOS_DB
-          value: "true"
- 
+name: CI/CD Pipeline
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Set up Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and Push Docker image
+      run: |
+          docker build -t digerate/enhanced-node-app:${{ github.sha }} ./enhanced-node-app
+          echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker push digerate/enhanced-node-app:${{ github.sha }} 
+    - name: Set up Kubectl
+      uses: azure/setup-kubectl@v1
+
+      # Pre-Deployment Check: Kubernetes configuration syntax check
+    - name: Check Kubernetes Configuration Syntax
+      run: |
+          kubectl apply --dry-run=client -f my-node-app-deployment.yaml
+          kubectl apply --dry-run=client -f enhanced-node-app-hpa.yaml
+      # Optional: Run Integration Tests against a Staging Environment
+    - name: Run Integration Tests
+      run: |
+          # Replace with the command to run your tests
+          # Example: ./run-integration-tests.sh
+          echo "Integration tests placeholder"
+    - name: Create CosmosDB Secret
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
+        export KUBECONFIG=./kubeconfig
+        kubectl create secret generic cosmosdb-secret \
+              --from-literal=COSMOS_DB_URI='${{ secrets.COSMOS_DB_URI }}' \
+              --from-literal=COSMOS_DB_PRIMARY_KEY='${{ secrets.COSMOS_DB_PRIMARY_KEY }}' \
+              --from-literal=COSMOS_DB_DATABASE_ID='${{ secrets.COSMOS_DB_DATABASE_ID }}' \
+              --from-literal=COSMOS_DB_CONTAINER_ID='${{ secrets.COSMOS_DB_CONTAINER_ID }}' \
+              -n default --dry-run=client -o yaml | kubectl apply -f - 
+    - name: Deploy to AKS
+      run: |
+        kubectl apply -f my-node-app-deployment.yaml
+        kubectl rollout status deployment/enhanced-node-app-deployment -n default
+        if [ $? -ne 0 ]; then
+          echo "Rollout failed. Triggering rollback..."
+          kubectl rollout undo deployment/enhanced-node-app-deployment
+          exit 1
+        fi
+        
+    - name: Apply HPA Configuration
+      run: |
+        kubectl apply -f enhanced-node-app-hpa.yaml    
+    - name: Get AKS Service Public IP
+      id: get-ip
+      run: |
+        IP=$(kubectl get svc myAKSCluster -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        echo "::set-output name=ip::$IP"
+    - name: Update function app with public IP
+      run: |
+        FUNCTION_APP_NAME=fronyendUI
+        RESOURCE_GROUP=ststicweb
+        az functionapp config appsettings set --name $FUNCTION_APP_NAME --resource-group $RESOURCE_GROUP --settings PUBLIC_IP=${{ steps.get-ip.outputs.ip }}
