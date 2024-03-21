@@ -39,14 +39,6 @@ jobs:
               -n default --dry-run=client -o yaml | kubectl apply -f -
                 kubectl set image deployment/enhanced-node-app-deployment enhanced-node-app=digerate/enhanced-node-app:${{ github.sha }} -n default      
       
-      - name: Apply HPA Configuration
-        run: |
-          kubectl apply -f enhanced-node-app-hpa.yaml --validate=false
-
-      - name: Verify HPA
-        run: |
-          kubectl get hpa enhanced-node-app-hpa -n default --validate=false
-
       - name: Get AKS Service Public IP
         id: get-ip
         run: |
