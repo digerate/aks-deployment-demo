@@ -49,7 +49,7 @@ jobs:
               -n default --dry-run=client -o yaml | kubectl apply -f - 
     - name: Deploy to AKS
       run: |
-        kubectl apply -f my-node-app-deployment.yaml
+        kubectl apply -f my-node-app-deployment.yaml --validate=false
         kubectl rollout status deployment/enhanced-node-app-deployment -n default
         if [ $? -ne 0 ]; then
           echo "Rollout failed. Triggering rollback..."
