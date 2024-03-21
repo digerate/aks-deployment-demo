@@ -38,16 +38,6 @@ jobs:
               --from-literal=COSMOS_DB_CONTAINER_ID='${{ secrets.COSMOS_DB_CONTAINER_ID }}' \
               -n default --dry-run=client -o yaml | kubectl apply -f - 
 
-    - name: Deploy to AKS
-      run: |
-        kubectl apply -f my-node-app-deployment.yaml
-        kubectl rollout status deployment/enhanced-node-app-deployment -n default
-        if [ $? -ne 0 ]; then
-          echo "Rollout failed. Triggering rollback..."
-          kubectl rollout undo deployment/enhanced-node-app-deployment
-          exit 1
-        fi
-
     - name: Apply HPA Configuration
       run: |
         kubectl apply -f enhanced-node-app-hpa.yaml    
