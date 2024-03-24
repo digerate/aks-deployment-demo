@@ -6,10 +6,7 @@ on:
     paths:
     - 'terraform/**/*'
 
-  pull_request:
-    branches: [main]
-    paths:
-      - 'terraform/**/*'
+  workflow_dispatch:
 
 jobs:
   deploy:
