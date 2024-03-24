@@ -4,12 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - ./terraform/**
+      - './terraform/*.tf'
   pull_request:
     branches: [main]
     paths:
-      - ./terraform/**
-  workflow_dispatch:
+      - './terraform/*.tf'
 
 jobs:
   deploy:
