@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Terraform  # Deploy AKS Cluster 
       uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.7.4
+        terraform_wrapper: true
 
     - name: Terraform Init and Apply
       env:
@@ -33,3 +36,4 @@ jobs:
           -var="cluster_name=${CLUSTER_NAME}" \
           -var="location=${LOCATION}" \
           -var="ssh_public_key=${SSH_PUBLIC_KEY}"
+
